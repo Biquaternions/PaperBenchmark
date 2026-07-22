@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Biquaternions <biquaternions@serlith.net>
+Date: Wed, 22 Jul 2026 17:10:29 -0500
+Subject: [PATCH] Benchmark Command
+
+
+diff --git a/net/minecraft/server/ReloadableServerResources.java b/net/minecraft/server/ReloadableServerResources.java
+index 8921b17a2caf39ae4b892238e926066c1ebe0330..8f34bf9a0afee35454e6039c3088fbb8621d08c6 100644
+--- a/net/minecraft/server/ReloadableServerResources.java
++++ b/net/minecraft/server/ReloadableServerResources.java
+@@ -47,6 +47,7 @@ public class ReloadableServerResources {
+         this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures), true); // Paper - Brigadier Command API - use modern alias registration
+         io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(this.commands, CommandBuildContext.simple(loadingContext, enabledFeatures)); // Paper - Brigadier Command API
+         io.papermc.paper.command.PaperCommands.registerCommands(); // Paper
++        me.biquaternions.benchmark.BenchmarkCommand.init(); // Benchmark - Command
+         this.advancements = new ServerAdvancementManager(loadingContext);
+         this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
+     }
