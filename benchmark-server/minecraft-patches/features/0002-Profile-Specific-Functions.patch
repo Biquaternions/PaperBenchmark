@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Biquaternions <biquaternions@serlith.net>
+Date: Wed, 22 Jul 2026 19:18:59 -0500
+Subject: [PATCH] Profile Specific Functions
+
+
+diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
+index 075e294333115738b25b64a390df323276cf39f9..bdd3b773617347a5bc1c1a1f1173171885135322 100644
+--- a/net/minecraft/server/level/ServerChunkCache.java
++++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -490,8 +490,12 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
+         profiler.popPush("chunks");
+         if (tickChunks) {
+             ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.level).moonrise$getPlayerChunkLoader().tick(); // Paper - rewrite chunk system
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickChunks();
+             this.tickChunks();
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickChunks();
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickEntityTracking();
+             this.chunkMap.tick();
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickEntityTracking();
+         }
+ 
+         profiler.popPush("unload");
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 02bd74f2ed7f34233e3543c8e70ae754adb8aa25..7cd90541212fa64d8841c75763b314f59afbd364 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -844,9 +844,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         if (!this.isDebug() && runs) {
+             long tick = this.getGameTime();
+             profiler.push("blockTicks");
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickBlocks(); // Benchmark - Blocks
+             this.blockTicks.tick(tick, paperConfig().environment.maxBlockTicks, this::tickBlock); // Paper - configurable max block ticks
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickBlocks(); // Benchmark - Blocks
+             profiler.popPush("fluidTicks");
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickFluids(); // Benchmark - Fluids
+             this.fluidTicks.tick(tick, paperConfig().environment.maxFluidTicks, this::tickFluid); // Paper - configurable max fluid ticks
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickFluids(); // Benchmark - Fluids
+             profiler.pop();
+         }
+ 
+@@ -856,7 +860,9 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+         }
+ 
+         profiler.popPush("chunkSource");
++        me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickChunkSources();
+         this.getChunkSource().tick(haveTime, true);
++        me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickChunkSources();
+         profiler.popPush("blockEvents");
+         if (runs) {
+             this.runBlockEvents();
+@@ -882,9 +888,12 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+             }
+ 
+             io.papermc.paper.entity.activation.ActivationRange.activateEntities(this); // Paper - EAR
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickEntities(); // Benchmark - Entities
+             this.entityTickList
+                 .forEach(
+                     entity -> {
++                        final boolean isVillager = entity instanceof net.minecraft.world.entity.npc.villager.Villager;
++                        if (isVillager) me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickVillagerBrains();
+                         if (!entity.isRemoved()) {
+                             if (!tickRateManager.isEntityFrozen(entity)) {
+                                 profiler.push("checkDespawn");
+@@ -906,11 +915,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+                                 }
+                             }
+                         }
++                        if (isVillager) me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickVillagerBrains();
+                     }
+                 );
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickEntities(); // Benchmark - Entities
+             if (this.paperConfig().unsupportedSettings.ticking.blockEntities) { // Paper - option to disable ticking
+             profiler.popPush("blockEntities");
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStartTickBlockEntities(); // Benchmark - Block Entities
+             this.tickBlockEntities();
++            me.biquaternions.benchmark.util.ProfilerUtils.recordStopTickBlockEntities(); // Benchmark - Block Entities
+             profiler.pop();
+             } // Paper - option to disable ticking
+             this.spigotConfig.currentPrimedTnt = 0; // Spigot
