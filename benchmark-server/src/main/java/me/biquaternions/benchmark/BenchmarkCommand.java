@@ -1,10 +1,14 @@
 package me.biquaternions.benchmark;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.PaperCommands;
+import me.biquaternions.benchmark.area.AreaType;
+import me.biquaternions.benchmark.profiler.impl.AreaProfiler;
+import me.biquaternions.benchmark.profiler.impl.NoopProfiler;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -27,6 +31,44 @@ public class BenchmarkCommand {
                         FEEDBACK_CURRENT_VERSION = PREFIX.append(Component.text("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")", NamedTextColor.WHITE));
                     }
                     ctx.getSource().getSender().sendMessage(FEEDBACK_CURRENT_VERSION);
+                    return Command.SINGLE_SUCCESS;
+                })
+            )
+            .then(Commands.literal("start")
+                .then(Commands.argument("profiler", StringArgumentType.word())
+                    .suggests((_, builder) -> {
+                        for (AreaType type : AreaType.values()) {
+                            builder.suggest(type.name());
+                        }
+                        return builder.buildFuture();
+                    })
+                    .executes(ctx -> {
+                        final String typeString = ctx.getArgument("profiler", String.class);
+                        final AreaType areaType;
+                        try {
+                            areaType = AreaType.valueOf(typeString);
+                        } catch (IllegalArgumentException e) {
+                            ctx.getSource().getSender().sendMessage("THIS PROFILER TYPE DOES NOT EXIST");
+                            return Command.SINGLE_SUCCESS;
+                        }
+
+                        for (AreaType type : AreaType.values()) {
+                            type.setProfiler(NoopProfiler::new);
+                        }
+                        areaType.setProfiler(AreaProfiler::new);
+                        ctx.getSource().getSender().sendMessage("Profiling started");
+
+                        return Command.SINGLE_SUCCESS;
+                    })
+                )
+            )
+            .then(Commands.literal("stop")
+                .executes(ctx -> {
+                    for (AreaType type : AreaType.values()) {
+                        type.setProfiler(NoopProfiler::new);
+                    }
+                    ctx.getSource().getSender().sendMessage("Profiling stopped");
+
                     return Command.SINGLE_SUCCESS;
                 })
             )

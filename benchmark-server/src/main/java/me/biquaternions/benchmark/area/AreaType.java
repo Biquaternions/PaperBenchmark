@@ -1,7 +1,6 @@
 package me.biquaternions.benchmark.area;
 
 import me.biquaternions.benchmark.profiler.AbstractProfiler;
-import me.biquaternions.benchmark.profiler.impl.AreaProfiler;
 import me.biquaternions.benchmark.profiler.impl.NoopProfiler;
 import org.jspecify.annotations.NullMarked;
 import java.util.function.Function;
@@ -9,30 +8,40 @@ import java.util.function.Supplier;
 
 @NullMarked
 public enum AreaType {
-    TICK_CHUNK_SOURCE_FULL(AreaProfiler::new), // ServerLevel
-    TICK_CHUNK_LOADS(AreaProfiler::new), // ServerChunkCache
-    TICK_ENTITY_TRACKING(AreaProfiler::new), // ServerChunkCache
-    TICK_CHUNK_UNLOADS(AreaProfiler::new), // ServerChunkCache
+    TICK_CHUNK_SOURCE_FULL(NoopProfiler::new), // ServerLevel
+    TICK_CHUNK_LOADS(NoopProfiler::new), // ServerChunkCache
+    TICK_ENTITY_TRACKING(NoopProfiler::new), // ServerChunkCache
+    TICK_CHUNK_UNLOADS(NoopProfiler::new), // ServerChunkCache
 
-    TICK_BLOCKS(AreaProfiler::new), // ServerLevel
-    TICK_FLUIDS(AreaProfiler::new), // ServerLevel
-    TICK_ENTITIES(AreaProfiler::new), // ServerLevel
-    TICK_BLOCK_ENTITIES(AreaProfiler::new), // ServerLevel
+    TICK_BLOCKS(NoopProfiler::new), // ServerLevel
+    TICK_FLUIDS(NoopProfiler::new), // ServerLevel
+    TICK_ENTITIES(NoopProfiler::new), // ServerLevel
+    TICK_BLOCK_ENTITIES(NoopProfiler::new), // ServerLevel
 
-    TICK_CONNECTION(AreaProfiler::new), // MinecraftServer
+    TICK_CONNECTION(NoopProfiler::new), // MinecraftServer
 
-    TICK_SERVER(AreaProfiler::new),  // MinecraftServer - measures the entire tick loop
+    TICK_SERVER(NoopProfiler::new),  // MinecraftServer - measures the entire tick loop
 
     NONE(NoopProfiler::new);
 
-    private final AbstractProfiler profiler;
-
-    AreaType(final Function<AreaType, ? extends AbstractProfiler> function) {
-        this.profiler = function.apply(this);
-    }
+    private AbstractProfiler profiler;
 
     AreaType(final Supplier<? extends AbstractProfiler> supplier) {
         this.profiler = supplier.get();
+    }
+
+    public void setProfiler(final Supplier<? extends AbstractProfiler> supplier) {
+        if (this == NONE) {
+            return;
+        }
+        this.profiler = supplier.get();
+    }
+
+    public void setProfiler(final Function<AreaType, ? extends AbstractProfiler> function) {
+        if (this == NONE) {
+            throw new IllegalStateException("Cannot profile NONE area type");
+        }
+        this.profiler = function.apply(this);
     }
 
     public AbstractProfiler getProfiler() {
