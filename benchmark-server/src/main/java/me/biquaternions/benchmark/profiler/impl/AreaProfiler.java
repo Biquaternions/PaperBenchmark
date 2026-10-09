@@ -4,6 +4,7 @@ import me.biquaternions.benchmark.area.AreaType;
 import me.biquaternions.benchmark.profiler.AbstractProfiler;
 import me.biquaternions.benchmark.util.RollingAverage;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AreaProfiler extends AbstractProfiler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AreaProfiler.class.getSimpleName());
-    private static final int WINDOW_SIZE = 500;
+    private static final int WINDOW_SIZE = 1000;
 
     private final RollingAverage rollingAverage = new RollingAverage(WINDOW_SIZE);
     private final AtomicInteger counter = new AtomicInteger(0);
@@ -30,10 +31,10 @@ public class AreaProfiler extends AbstractProfiler {
 
     @Override
     public void push(final long diff) { // Nanoseconds
-        this.rollingAverage.add(diff / 1E-6); // Milliseconds
+        this.rollingAverage.add(diff * 1E-6); // Milliseconds
         if (this.counter.incrementAndGet() % WINDOW_SIZE == 0) {
             final ServerPlayer player = this.caller;
-            if (player != null) {
+            if (player != null && MinecraftServer.getServer().getPlayerList().getPlayer(player.getUUID()) != null) {
                 this.dump(player);
             } else {
                 this.dump();
