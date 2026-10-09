@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @NullMarked
 public class AreaProfiler extends AbstractProfiler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AreaProfiler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AreaProfiler.class.getSimpleName());
     private static final int WINDOW_SIZE = 500;
 
     private final RollingAverage rollingAverage = new RollingAverage(WINDOW_SIZE);
@@ -29,8 +29,8 @@ public class AreaProfiler extends AbstractProfiler {
     }
 
     @Override
-    public void push(final long diff) {
-        this.rollingAverage.add(diff);
+    public void push(final long diff) { // Nanoseconds
+        this.rollingAverage.add(diff / 1E-6); // Milliseconds
         if (this.counter.incrementAndGet() % WINDOW_SIZE == 0) {
             final ServerPlayer player = this.caller;
             if (player != null) {
@@ -65,8 +65,8 @@ public class AreaProfiler extends AbstractProfiler {
         final double percentile99 = this.rollingAverage.getPercentile(0.99);
         return List.of(
             String.format("=============[ Sample at: %d ]=============", System.nanoTime() / 1000),
-            String.format("[%s] avg: %.8f   -   min: %.8f   -   max: %.8f", this.getTypeName(), average, min, max),
-            String.format("[%s] 90%%ile: %.8f   -   95%%ile: %.8f   -   99%%ile: %.8f", this.getTypeName(), percentile90, percentile95, percentile99)
+            String.format("[%s] avg: %.8fms   -   min: %.8fms   -   max: %.8fms", this.getTypeName(), average, min, max),
+            String.format("[%s] 90%%ile: %.8fms   -   95%%ile: %.8fms   -   99%%ile: %.8fms", this.getTypeName(), percentile90, percentile95, percentile99)
         );
     }
 

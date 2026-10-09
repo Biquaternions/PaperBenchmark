@@ -28,7 +28,7 @@ public class RollingAverage {
         this.samples = new ArrayDeque<>(this.windowSize + 1);
     }
 
-    public void add(long num) {
+    public void add(double num) {
         this.add(new BigDecimal(num));
     }
 
