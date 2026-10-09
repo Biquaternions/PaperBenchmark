@@ -87,9 +87,4 @@ public class RollingAverage {
         return sortedSamples[rank].doubleValue();
     }
 
-    public void clear() {
-        this.total = BigDecimal.ZERO;
-        this.samples.clear();
-    }
-
 }

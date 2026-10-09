@@ -1,6 +1,7 @@
 package me.biquaternions.benchmark;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -14,13 +15,16 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Set;
 
+@NullMarked
 public class BenchmarkCommand {
 
     private static final Component PREFIX = MiniMessage.miniMessage().deserialize("<white><gradient:#F56827:#F2F527:#F56827><bold>Benchmark</bold></gradient> <color:#FF4A4A>⮞</color> </white>");
-    private static Component FEEDBACK_CURRENT_VERSION = null;
+    private static @Nullable Component FEEDBACK_CURRENT_VERSION = null;
 
     public static void init() {
 
@@ -44,27 +48,30 @@ public class BenchmarkCommand {
                         }
                         return builder.buildFuture();
                     })
-                    .executes(ctx -> {
-                        final String typeString = ctx.getArgument("profiler", String.class);
-                        final AreaType areaType;
-                        try {
-                            areaType = AreaType.valueOf(typeString);
-                        } catch (IllegalArgumentException e) {
-                            ctx.getSource().getSender().sendMessage("THIS PROFILER TYPE DOES NOT EXIST");
+                    .then(Commands.argument("window", IntegerArgumentType.integer(500))
+                        .executes(ctx -> {
+                            final int window = ctx.getArgument("window", int.class);
+                            final String typeString = ctx.getArgument("profiler", String.class);
+                            final AreaType areaType;
+                            try {
+                                areaType = AreaType.valueOf(typeString);
+                            } catch (IllegalArgumentException e) {
+                                ctx.getSource().getSender().sendMessage("THIS PROFILER TYPE DOES NOT EXIST");
+                                return Command.SINGLE_SUCCESS;
+                            }
+
+                            for (AreaType type : AreaType.values()) {
+                                type.setProfiler(NoopProfiler::new);
+                            }
+                            areaType.setProfiler(AreaProfiler::new, window);
+                            if (ctx.getSource().getSender() instanceof CraftPlayer player) {
+                                areaType.getProfiler().setCaller(player.getHandle());
+                            }
+                            ctx.getSource().getSender().sendMessage("Profiling started");
+
                             return Command.SINGLE_SUCCESS;
-                        }
-
-                        for (AreaType type : AreaType.values()) {
-                            type.setProfiler(NoopProfiler::new);
-                        }
-                        areaType.setProfiler(AreaProfiler::new);
-                        if (ctx.getSource().getSender() instanceof CraftPlayer player) {
-                            areaType.getProfiler().setCaller(player.getHandle());
-                        }
-                        ctx.getSource().getSender().sendMessage("Profiling started");
-
-                        return Command.SINGLE_SUCCESS;
-                    })
+                        })
+                    )
                 )
             )
             .then(Commands.literal("stop")

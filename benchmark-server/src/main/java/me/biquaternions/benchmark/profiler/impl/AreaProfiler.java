@@ -18,21 +18,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AreaProfiler extends AbstractProfiler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AreaProfiler.class.getSimpleName());
-    private static final int WINDOW_SIZE = 1000;
 
-    private final RollingAverage rollingAverage = new RollingAverage(WINDOW_SIZE);
+    private final int windowSize;
+    private final RollingAverage rollingAverage;
     private final AtomicInteger counter = new AtomicInteger(0);
 
     private @Nullable ServerPlayer caller = null;
 
-    public AreaProfiler(final AreaType type) {
+    public AreaProfiler(final AreaType type, final int window) {
         super(type);
+        this.windowSize = window;
+        this.rollingAverage = new RollingAverage(window);
     }
 
     @Override
     public void push(final long diff) { // Nanoseconds
         this.rollingAverage.add(diff * 1E-6); // Milliseconds
-        if (this.counter.incrementAndGet() % WINDOW_SIZE == 0) {
+        if (this.counter.incrementAndGet() % this.windowSize == 0) {
             final ServerPlayer player = this.caller;
             if (player != null && MinecraftServer.getServer().getPlayerList().getPlayer(player.getUUID()) != null) {
                 this.dump(player);
@@ -74,12 +76,6 @@ public class AreaProfiler extends AbstractProfiler {
     @Override
     public void setCaller(final ServerPlayer player) {
         this.caller = player;
-    }
-
-    @Override
-    public void terminate() {
-        this.caller = null;
-        this.rollingAverage.clear();
     }
 
 }

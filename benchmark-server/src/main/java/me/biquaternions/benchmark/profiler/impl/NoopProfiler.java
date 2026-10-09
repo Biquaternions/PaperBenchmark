@@ -28,8 +28,4 @@ public class NoopProfiler extends AbstractProfiler {
     public void setCaller(final ServerPlayer player) {
     }
 
-    @Override
-    public void terminate() {
-    }
-
 }

@@ -3,6 +3,7 @@ package me.biquaternions.benchmark.area;
 import me.biquaternions.benchmark.profiler.AbstractProfiler;
 import me.biquaternions.benchmark.profiler.impl.NoopProfiler;
 import org.jspecify.annotations.NullMarked;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -37,11 +38,11 @@ public enum AreaType {
         this.profiler = supplier.get();
     }
 
-    public void setProfiler(final Function<AreaType, ? extends AbstractProfiler> function) {
+    public void setProfiler(final BiFunction<AreaType, Integer, ? extends AbstractProfiler> function, final int window) {
         if (this == NONE) {
             throw new IllegalStateException("Cannot profile NONE area type");
         }
-        this.profiler = function.apply(this);
+        this.profiler = function.apply(this, window);
     }
 
     public AbstractProfiler getProfiler() {

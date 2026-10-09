@@ -21,8 +21,6 @@ public abstract class AbstractProfiler {
 
     public abstract void setCaller(final ServerPlayer player);
 
-    public abstract void terminate();
-
     protected final String getTypeName() {
         return this.type.name();
     }
