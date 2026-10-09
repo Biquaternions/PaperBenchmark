@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 @NullMarked
 public enum AreaType {
     TICK_CHUNK_SOURCE_FULL(NoopProfiler::new), // ServerLevel
-    TICK_CHUNK_LOADS(NoopProfiler::new), // ServerChunkCache
+    TICK_CHUNKS(NoopProfiler::new), // ServerChunkCache
     TICK_ENTITY_TRACKING(NoopProfiler::new), // ServerChunkCache
     TICK_CHUNK_UNLOADS(NoopProfiler::new), // ServerChunkCache
 
