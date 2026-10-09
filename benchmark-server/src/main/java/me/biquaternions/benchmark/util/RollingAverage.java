@@ -1,5 +1,6 @@
 package me.biquaternions.benchmark.util;
 
+import org.jspecify.annotations.NullMarked;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
@@ -13,6 +14,7 @@ import java.util.Queue;
  *
  * @author aikar (PaperMC) <a href="https://github.com/PaperMC/Paper/blob/master/Spigot-Server-Patches/0021-Further-improve-server-tick-loop.patch">...</a>
  */
+@NullMarked
 public class RollingAverage {
 
     private static final BigDecimal[] EMPTY_DECIMAL = new BigDecimal[0];
@@ -24,6 +26,10 @@ public class RollingAverage {
     public RollingAverage(int windowSize) {
         this.windowSize = windowSize;
         this.samples = new ArrayDeque<>(this.windowSize + 1);
+    }
+
+    public void add(long num) {
+        this.add(new BigDecimal(num));
     }
 
     public synchronized void add(BigDecimal num) {
@@ -79,6 +85,11 @@ public class RollingAverage {
 
         int rank = (int) Math.ceil(percentile * (sortedSamples.length - 1));
         return sortedSamples[rank].doubleValue();
+    }
+
+    public void clear() {
+        this.total = BigDecimal.ZERO;
+        this.samples.clear();
     }
 
 }
