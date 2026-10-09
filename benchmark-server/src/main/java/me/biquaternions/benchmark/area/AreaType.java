@@ -4,7 +4,7 @@ import me.biquaternions.benchmark.profiler.AbstractProfiler;
 import me.biquaternions.benchmark.profiler.impl.NoopProfiler;
 import org.jspecify.annotations.NullMarked;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 @NullMarked
 public enum AreaType {
@@ -21,26 +21,19 @@ public enum AreaType {
     TICK_CONNECTION(NoopProfiler::new), // MinecraftServer
 
     TICK_SERVER(NoopProfiler::new),  // MinecraftServer - measures the entire tick loop
-
-    NONE(NoopProfiler::new);
+    ;
 
     private AbstractProfiler profiler;
 
-    AreaType(final Supplier<? extends AbstractProfiler> supplier) {
-        this.profiler = supplier.get();
+    AreaType(final Function<AreaType, ? extends AbstractProfiler> generator) {
+        this.profiler = generator.apply(this);
     }
 
-    public void setProfiler(final Supplier<? extends AbstractProfiler> supplier) {
-        if (this == NONE) {
-            return;
-        }
-        this.profiler = supplier.get();
+    public void setProfiler(final Function<AreaType, ? extends AbstractProfiler> generator) {
+        this.profiler = generator.apply(this);
     }
 
     public void setProfiler(final BiFunction<AreaType, Integer, ? extends AbstractProfiler> function, final int window) {
-        if (this == NONE) {
-            throw new IllegalStateException("Cannot profile NONE area type");
-        }
         this.profiler = function.apply(this, window);
     }
 

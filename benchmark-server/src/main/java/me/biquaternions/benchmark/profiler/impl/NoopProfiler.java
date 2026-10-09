@@ -8,8 +8,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class NoopProfiler extends AbstractProfiler {
 
-    public NoopProfiler() {
-        super(AreaType.NONE);
+    public NoopProfiler(final AreaType type) {
+        super(type);
     }
 
     @Override
