@@ -15,7 +15,9 @@ public abstract class AbstractProfiler {
 
     public abstract void push(final long diff);
 
-    public abstract void dump(final ServerPlayer player);
+    protected abstract void dump(final ServerPlayer player);
+
+    protected abstract void dump();
 
     public abstract void setCaller(final ServerPlayer player);
 

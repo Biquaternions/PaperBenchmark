@@ -7,11 +7,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @NullMarked
 public class AreaProfiler extends AbstractProfiler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AreaProfiler.class);
     private static final int WINDOW_SIZE = 500;
 
     private final RollingAverage rollingAverage = new RollingAverage(WINDOW_SIZE);
@@ -30,19 +35,39 @@ public class AreaProfiler extends AbstractProfiler {
             final ServerPlayer player = this.caller;
             if (player != null) {
                 this.dump(player);
+            } else {
+                this.dump();
             }
         }
     }
 
     @Override
-    public void dump(final ServerPlayer player) {
+    protected void dump(final ServerPlayer player) {
+        for (String string : this.generateStrings()) {
+            player.sendSystemMessage(Component.literal(string));
+        }
+    }
+
+    @Override
+    protected void dump() {
+        LOGGER.error("The profiler is trying to dump data without a player present (this shouldn't happen)");
+        for (String string : this.generateStrings()) {
+            LOGGER.warn(string);
+        }
+    }
+
+    private Collection<String> generateStrings() {
         final double average = this.rollingAverage.getAverage();
         final double min = this.rollingAverage.getMin();
         final double max = this.rollingAverage.getMax();
         final double percentile90 = this.rollingAverage.getPercentile(0.90);
         final double percentile95 = this.rollingAverage.getPercentile(0.95);
         final double percentile99 = this.rollingAverage.getPercentile(0.99);
-        player.sendSystemMessage(Component.literal(""));
+        return List.of(
+            String.format("=============[ Sample at: %d ]=============", System.nanoTime() / 1000),
+            String.format("[%s] avg: %.8f   -   min: %.8f   -   max: %.8f", this.getTypeName(), average, min, max),
+            String.format("[%s] 90%%ile: %.8f   -   95%%ile: %.8f   -   99%%ile: %.8f", this.getTypeName(), percentile90, percentile95, percentile99)
+        );
     }
 
     @Override

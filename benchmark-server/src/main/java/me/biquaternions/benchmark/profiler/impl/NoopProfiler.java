@@ -17,7 +17,11 @@ public class NoopProfiler extends AbstractProfiler {
     }
 
     @Override
-    public void dump(final ServerPlayer player) {
+    protected void dump(final ServerPlayer player) {
+    }
+
+    @Override
+    protected void dump() {
     }
 
     @Override
