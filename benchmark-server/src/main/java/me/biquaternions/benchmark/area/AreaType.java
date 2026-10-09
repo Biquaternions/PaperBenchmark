@@ -4,7 +4,6 @@ import me.biquaternions.benchmark.profiler.AbstractProfiler;
 import me.biquaternions.benchmark.profiler.impl.NoopProfiler;
 import org.jspecify.annotations.NullMarked;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @NullMarked
