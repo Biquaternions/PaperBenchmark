@@ -38,9 +38,8 @@ public class AreaProfiler extends AbstractProfiler {
             final ServerPlayer player = this.caller;
             if (player != null && MinecraftServer.getServer().getPlayerList().getPlayer(player.getUUID()) != null) {
                 this.dump(player);
-            } else {
-                this.dump();
             }
+            this.dump();
         }
     }
 
@@ -53,7 +52,6 @@ public class AreaProfiler extends AbstractProfiler {
 
     @Override
     protected void dump() {
-        LOGGER.error("The profiler is trying to dump data without a player present (this shouldn't happen)");
         for (String string : this.generateStrings()) {
             LOGGER.warn(string);
         }
